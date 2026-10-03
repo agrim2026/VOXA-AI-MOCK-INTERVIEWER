@@ -1,0 +1,1077 @@
+/* =====================================================
+   VOXA AI — LIVE INTERVIEW
+===================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+.live-interview-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 15% 15%,
+      rgba(26, 104, 236, 0.14),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 85% 20%,
+      rgba(0, 194, 255, 0.09),
+      transparent 30%
+    ),
+    #07101e;
+
+  color: white;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.live-header {
+  height: 78px;
+  padding: 0 5%;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: rgba(7, 16, 30, 0.85);
+  backdrop-filter: blur(20px);
+
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.live-brand {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.live-logo {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+.live-logo span {
+  color: #24a7f5;
+}
+
+.live-status {
+  padding: 7px 12px;
+  border-radius: 20px;
+
+  background: rgba(17, 197, 127, 0.1);
+  color: #43e0a0;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.live-status span {
+  display: inline-block;
+
+  width: 7px;
+  height: 7px;
+
+  margin-right: 6px;
+
+  border-radius: 50%;
+
+  background: #ff4757;
+
+  box-shadow: 0 0 10px #ff4757;
+
+  animation: livePulse 1.5s infinite;
+}
+
+@keyframes livePulse {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+}
+
+.live-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.interview-timer,
+.question-counter {
+  padding: 9px 13px;
+
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.06);
+
+  color: #d9e7f7;
+
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  font-size: 13px;
+}
+
+.question-counter {
+  color: #55baff;
+}
+
+/* =====================================================
+   MAIN
+===================================================== */
+
+.live-interview-main {
+  width: min(1250px, 92%);
+
+  margin: auto;
+
+  padding: 35px 0;
+
+  display: grid;
+
+  grid-template-columns: 0.9fr 1.1fr;
+
+  gap: 25px;
+
+  flex: 1;
+}
+
+/* =====================================================
+   AI INTERVIEWER PANEL
+===================================================== */
+
+.ai-interviewer-panel {
+  min-height: 620px;
+
+  padding: 25px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  border-radius: 25px;
+
+  background: rgba(255, 255, 255, 0.045);
+
+  backdrop-filter: blur(20px);
+
+  display: flex;
+  flex-direction: column;
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+/* AI HEADER */
+
+.ai-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.ai-avatar {
+  width: 45px;
+  height: 45px;
+
+  border-radius: 14px;
+
+  background: linear-gradient(
+    135deg,
+    #1264e8,
+    #1db4e8
+  );
+
+  display: grid;
+  place-items: center;
+
+  box-shadow:
+    0 0 25px rgba(20, 150, 240, 0.25);
+}
+
+.ai-panel-header strong,
+.ai-panel-header span {
+  display: block;
+}
+
+.ai-panel-header strong {
+  font-size: 14px;
+}
+
+.ai-panel-header span {
+  color: #8194ad;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* =====================================================
+   AI FACE
+===================================================== */
+
+.ai-face {
+  position: relative;
+
+  height: 250px;
+
+  display: grid;
+  place-items: center;
+}
+
+.ai-glow {
+  position: absolute;
+
+  width: 190px;
+  height: 190px;
+
+  border-radius: 50%;
+
+  background: #086ee5;
+
+  opacity: 0.18;
+
+  filter: blur(35px);
+
+  animation: aiGlow 2s infinite;
+}
+
+@keyframes aiGlow {
+  50% {
+    transform: scale(1.2);
+    opacity: 0.28;
+  }
+}
+
+.ai-face-core {
+  width: 130px;
+  height: 130px;
+
+  border-radius: 50%;
+
+  background: linear-gradient(
+    135deg,
+    #075bd8,
+    #18b9e9
+  );
+
+  display: grid;
+  place-items: center;
+
+  box-shadow:
+    0 0 50px rgba(20, 160, 240, 0.35);
+
+  position: relative;
+
+  z-index: 2;
+}
+
+/* =====================================================
+   VOICE WAVES
+===================================================== */
+
+.voice-waves {
+  position: absolute;
+
+  bottom: 20px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+}
+
+.voice-waves span {
+  width: 4px;
+  height: 18px;
+
+  border-radius: 5px;
+
+  background: #24aef3;
+
+  animation: voiceWave 1s infinite
+    ease-in-out;
+}
+
+.voice-waves span:nth-child(2) {
+  animation-delay: 0.1s;
+  height: 30px;
+}
+
+.voice-waves span:nth-child(3) {
+  animation-delay: 0.2s;
+  height: 42px;
+}
+
+.voice-waves span:nth-child(4) {
+  animation-delay: 0.3s;
+  height: 30px;
+}
+
+.voice-waves span:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+@keyframes voiceWave {
+  50% {
+    transform: scaleY(0.4);
+  }
+}
+
+/* =====================================================
+   AI QUESTION
+===================================================== */
+
+.ai-question {
+  margin-top: auto;
+}
+
+.question-label {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: #37aef2;
+
+  font-size: 10px;
+
+  letter-spacing: 1.5px;
+
+  font-weight: 900;
+}
+
+.ai-question h2 {
+  font-size: 22px;
+
+  line-height: 1.4;
+
+  margin: 10px 0;
+}
+
+.ai-question p {
+  color: #7f91a8;
+
+  line-height: 1.6;
+
+  font-size: 13px;
+}
+
+/* =====================================================
+   SPEAK BUTTON
+===================================================== */
+
+.speak-button {
+  width: 100%;
+
+  margin-top: 15px;
+
+  border: 1px solid rgba(40, 167, 240, 0.35);
+
+  background: rgba(20, 130, 220, 0.12);
+
+  color: #54baff;
+
+  border-radius: 12px;
+
+  padding: 13px;
+
+  cursor: pointer;
+
+  font-weight: 700;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  gap: 8px;
+
+  transition: 0.25s;
+}
+
+.speak-button:hover {
+  background: rgba(20, 130, 220, 0.22);
+
+  transform: translateY(-1px);
+}
+
+.speak-button.speaking {
+  background: #0875dd;
+
+  color: white;
+
+  box-shadow:
+    0 0 25px rgba(0, 145, 255, 0.35);
+}
+
+/* =====================================================
+   CAMERA PANEL
+===================================================== */
+
+.camera-panel {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 15px;
+}
+
+/* =====================================================
+   CAMERA
+===================================================== */
+
+.camera-container {
+  height: 390px;
+
+  position: relative;
+
+  overflow: hidden;
+
+  border-radius: 22px;
+
+  background: #101b2b;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.camera-container video {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transform: scaleX(-1);
+
+  transition: 0.3s;
+}
+
+.camera-container video.camera-off {
+  opacity: 0;
+}
+
+.camera-disabled {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  align-items: center;
+
+  color: #8190a5;
+
+  gap: 12px;
+
+  text-align: center;
+
+  padding: 20px;
+}
+
+.camera-top-info {
+  position: absolute;
+
+  left: 15px;
+  top: 15px;
+
+  padding: 7px 10px;
+
+  border-radius: 9px;
+
+  background: rgba(0, 0, 0, 0.55);
+
+  font-size: 11px;
+
+  color: #dcecff;
+
+  backdrop-filter: blur(8px);
+}
+
+.camera-role {
+  position: absolute;
+
+  right: 15px;
+  top: 15px;
+
+  padding: 7px 10px;
+
+  border-radius: 9px;
+
+  background: rgba(0, 0, 0, 0.55);
+
+  font-size: 11px;
+
+  color: #b9cee3;
+
+  backdrop-filter: blur(8px);
+}
+
+/* =====================================================
+   REACTION
+===================================================== */
+
+.reaction-popup {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  width: 75px;
+  height: 75px;
+
+  border-radius: 50%;
+
+  display: grid;
+  place-items: center;
+
+  font-size: 38px;
+
+  background: rgba(0, 0, 0, 0.45);
+
+  backdrop-filter: blur(10px);
+
+  animation: reactionPop 1.8s ease forwards;
+
+  z-index: 5;
+}
+
+@keyframes reactionPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -70%) scale(1);
+  }
+}
+
+/* =====================================================
+   INTEGRITY MONITOR
+===================================================== */
+
+.integrity-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  background: rgba(255, 255, 255, 0.045);
+
+  border-radius: 17px;
+
+  padding: 15px;
+}
+
+.integrity-header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.integrity-header > div {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color: #cfe2f7;
+}
+
+.integrity-header strong {
+  font-size: 13px;
+}
+
+.integrity-normal {
+  color: #43e0a0;
+
+  background: rgba(17, 197, 127, 0.1);
+
+  padding: 5px 9px;
+
+  border-radius: 20px;
+
+  font-size: 10px;
+
+  font-weight: 800;
+}
+
+.integrity-metrics {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 10px;
+
+  margin-top: 14px;
+}
+
+.integrity-metrics > div {
+  padding: 10px;
+
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.integrity-metrics span {
+  display: block;
+
+  color: #71859e;
+
+  font-size: 10px;
+
+  margin-bottom: 5px;
+}
+
+.integrity-metrics strong {
+  color: #d9eaff;
+
+  font-size: 15px;
+}
+
+.integrity-panel p {
+  margin: 12px 0 0;
+
+  color: #667b94;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+/* =====================================================
+   ANSWER BOX
+===================================================== */
+
+.answer-box {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  background: rgba(255, 255, 255, 0.045);
+
+  border-radius: 17px;
+
+  padding: 15px;
+}
+
+.answer-header,
+.answer-footer {
+  display: flex;
+
+  justify-content: space-between;
+
+  color: #aebfd3;
+
+  font-size: 12px;
+}
+
+.answer-status {
+  color: #39c997;
+}
+
+.answer-box textarea {
+  width: 100%;
+
+  min-height: 80px;
+
+  margin: 12px 0;
+
+  resize: vertical;
+
+  background: transparent;
+
+  border: none;
+
+  outline: none;
+
+  color: white;
+
+  font-family: inherit;
+
+  line-height: 1.6;
+
+  font-size: 13px;
+}
+
+.answer-box textarea::placeholder {
+  color: #62758d;
+}
+
+.answer-footer {
+  color: #6f8198;
+}
+
+/* =====================================================
+   CONTROLS
+===================================================== */
+
+.interview-controls {
+  display: flex;
+
+  gap: 10px;
+
+  align-items: center;
+}
+
+.control-btn {
+  width: 47px;
+  height: 47px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  background: rgba(255, 255, 255, 0.06);
+
+  color: white;
+
+  border-radius: 13px;
+
+  display: grid;
+
+  place-items: center;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+
+  transform: translateY(-2px);
+}
+
+.control-btn.off {
+  background: #b52d3b;
+
+  border-color: #d33c4c;
+
+  box-shadow:
+    0 5px 20px rgba(181, 45, 59, 0.25);
+}
+
+/* =====================================================
+   END CALL
+===================================================== */
+
+.end-call-btn {
+  height: 47px;
+
+  padding: 0 17px;
+
+  border: none;
+
+  border-radius: 13px;
+
+  background: #2a1820;
+
+  color: #ff7380;
+
+  font-weight: 700;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.end-call-btn:hover {
+  background: #a52b3a;
+
+  color: white;
+
+  transform: translateY(-2px);
+}
+
+/* =====================================================
+   NEXT QUESTION
+===================================================== */
+
+.next-question-btn {
+  margin-left: auto;
+
+  height: 47px;
+
+  padding: 0 20px;
+
+  border: none;
+
+  border-radius: 13px;
+
+  background: linear-gradient(
+    135deg,
+    #0868e5,
+    #16a9e8
+  );
+
+  color: white;
+
+  font-weight: 800;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 25px rgba(10, 120, 230, 0.25);
+
+  transition: 0.2s;
+}
+
+.next-question-btn:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 30px rgba(10, 120, 230, 0.35);
+}
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.live-footer {
+  width: 92%;
+
+  margin: auto auto 20px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  color: #657991;
+
+  font-size: 11px;
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 1000px) {
+  .live-interview-main {
+    grid-template-columns: 1fr;
+
+    width: min(850px, 94%);
+  }
+
+  .ai-interviewer-panel {
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 650px) {
+  .live-header {
+    height: 68px;
+
+    padding: 0 18px;
+  }
+
+  .live-brand {
+    gap: 10px;
+  }
+
+  .live-logo {
+    font-size: 18px;
+  }
+
+  .live-status {
+    display: none;
+  }
+
+  .question-counter {
+    display: none;
+  }
+
+  .interview-timer {
+    font-size: 11px;
+  }
+
+  .live-interview-main {
+    width: 94%;
+
+    padding: 20px 0;
+  }
+
+  .ai-interviewer-panel {
+    padding: 18px;
+
+    min-height: 500px;
+  }
+
+  .ai-face {
+    height: 200px;
+  }
+
+  .ai-face-core {
+    width: 105px;
+    height: 105px;
+  }
+
+  .camera-container {
+    height: 280px;
+  }
+
+  .integrity-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .interview-controls {
+    flex-wrap: wrap;
+  }
+
+  .next-question-btn {
+    margin-left: 0;
+
+    flex: 1;
+  }
+
+  .end-call-btn {
+    flex: 1;
+  }
+
+  .live-footer {
+    flex-direction: column;
+
+    gap: 8px;
+
+    text-align: center;
+
+    padding-bottom: 10px;
+  }
+}
+
+@media (max-width: 400px) {
+  .camera-container {
+    height: 235px;
+  }
+
+  .control-btn {
+    width: 43px;
+    height: 43px;
+  }
+
+  .end-call-btn,
+  .next-question-btn {
+    height: 43px;
+  }
+
+  .ai-question h2 {
+    font-size: 18px;
+  }
+}
+/* =========================================
+   INTERVIEW SETTINGS
+========================================= */
+
+.interview-settings {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 24px;
+  background: rgba(5, 10, 25, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.setting-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.setting-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #aebbd4;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.setting-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.setting-btn {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #b9c4d8;
+  padding: 7px 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: 0.2s ease;
+}
+
+.setting-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.setting-btn.active {
+  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.25);
+}
+
+/* MOBILE */
+
+@media (max-width: 800px) {
+  .interview-settings {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .setting-group {
+    justify-content: space-between;
+  }
+
+  .setting-buttons {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}

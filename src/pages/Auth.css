@@ -1,0 +1,624 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.authPage {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  background: #fff;
+  overflow: hidden;
+  font-family: Inter, Arial, sans-serif;
+}
+
+/* =====================================
+   LEFT LOGIN / SIGNUP PANEL
+===================================== */
+
+.authLeft {
+  width: 55%;
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 45px;
+
+  background: #ffffff;
+
+  position: relative;
+  z-index: 2;
+}
+
+.authFormWrapper {
+  width: 100%;
+  max-width: 430px;
+}
+
+/* =====================================
+   LOGO
+===================================== */
+
+.authLogo {
+  display: inline-block;
+
+  margin-bottom: 42px;
+
+  color: #111827;
+
+  font-size: 30px;
+  font-weight: 800;
+
+  letter-spacing: -1.5px;
+
+  text-decoration: none;
+}
+
+.authLogo span {
+  color: #5b5ff5;
+}
+
+/* =====================================
+   HEADER
+===================================== */
+
+.authHeader {
+  margin-bottom: 28px;
+}
+
+.authHeader h1 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 35px;
+  font-weight: 750;
+
+  letter-spacing: -1.8px;
+
+  line-height: 1.15;
+}
+
+.authHeader p {
+  margin-top: 9px;
+
+  color: #9ca3af;
+
+  font-size: 14px;
+}
+
+/* =====================================
+   INPUT
+===================================== */
+
+.inputGroup {
+  margin-bottom: 17px;
+}
+
+.inputGroup label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #374151;
+
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.inputGroup input {
+  width: 100%;
+  height: 52px;
+
+  padding: 0 16px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 11px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #111827;
+
+  font-size: 14px;
+
+  transition: 0.25s ease;
+}
+
+.inputGroup input::placeholder {
+  color: #c3c7cf;
+}
+
+.inputGroup input:hover {
+  border-color: #d1d5db;
+}
+
+.inputGroup input:focus {
+  border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.08);
+}
+
+/* =====================================
+   REMEMBER + FORGOT
+===================================== */
+
+.formOptions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin: 5px 0 21px;
+}
+
+.rememberMe {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  color: #6b7280;
+
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.rememberMe input {
+  width: 14px;
+  height: 14px;
+
+  accent-color: #6366f1;
+}
+
+.formOptions a {
+  color: #6366f1;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  text-decoration: none;
+}
+
+.formOptions a:hover {
+  text-decoration: underline;
+}
+
+/* =====================================
+   MAIN BUTTON
+===================================== */
+
+.authSubmit {
+  width: 100%;
+  height: 52px;
+
+  border: none;
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6366f1,
+      #4f46e5
+    );
+
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 25px rgba(99, 102, 241, 0.25);
+
+  transition: all 0.25s ease;
+}
+
+.authSubmit span {
+  margin-left: 10px;
+
+  font-size: 17px;
+}
+
+.authSubmit:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 13px 32px rgba(99, 102, 241, 0.35);
+}
+
+.authSubmit:active {
+  transform: translateY(0);
+}
+
+.authSubmit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* =====================================
+   OR DIVIDER
+===================================== */
+
+.authDivider {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  margin: 24px 0;
+}
+
+.authDivider::before,
+.authDivider::after {
+  content: "";
+
+  flex: 1;
+
+  height: 1px;
+
+  background: #e5e7eb;
+}
+
+.authDivider span {
+  color: #9ca3af;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* =====================================
+   SOCIAL BUTTONS
+===================================== */
+
+.socialButton {
+  width: 100%;
+  height: 48px;
+
+  margin-bottom: 11px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  color: #374151;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.socialButton:hover {
+  background: #fafafa;
+
+  border-color: #cfd2da;
+
+  transform: translateY(-1px);
+}
+
+.googleIcon {
+  color: #4285f4;
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.githubIcon {
+  color: #111827;
+
+  font-size: 17px;
+}
+
+/* =====================================
+   FOOTER
+===================================== */
+
+.authFooter {
+  margin-top: 23px;
+
+  text-align: center;
+}
+
+.authFooter p {
+  color: #9ca3af;
+
+  font-size: 12px;
+}
+
+.authFooter a {
+  color: #6366f1;
+
+  font-weight: 700;
+
+  text-decoration: none;
+}
+
+.authFooter a:hover {
+  text-decoration: underline;
+}
+
+/* =====================================
+   ERROR / SUCCESS
+===================================== */
+
+.authMessage {
+  padding: 11px 13px;
+
+  margin-bottom: 14px;
+
+  border-radius: 8px;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+.authMessage.error {
+  color: #dc2626;
+
+  background: #fef2f2;
+
+  border: 1px solid #fecaca;
+}
+
+.authMessage.success {
+  color: #16a34a;
+
+  background: #f0fdf4;
+
+  border: 1px solid #bbf7d0;
+}
+
+/* =====================================
+   RIGHT IMAGE PANEL
+===================================== */
+
+.authRight {
+  width: 45%;
+  min-height: 100vh;
+
+  position: relative;
+
+  overflow: hidden;
+
+  /*
+    Mountain image directly from web
+  */
+
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(15, 23, 42, 0.08) 0%,
+      rgba(15, 23, 42, 0.18) 45%,
+      rgba(2, 6, 23, 0.55) 100%
+    ),
+    url("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=90");
+
+  background-size: cover;
+
+  background-position: center;
+
+  transform: scale(1.01);
+}
+
+/* =====================================
+   IMAGE VIGNETTE
+===================================== */
+
+.authRight::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at 50% 40%,
+      transparent 0%,
+      rgba(0, 0, 0, 0.18) 65%,
+      rgba(0, 0, 0, 0.5) 100%
+    );
+
+  pointer-events: none;
+
+  z-index: 1;
+}
+
+/* =====================================
+   BLUE CINEMATIC TONE
+===================================== */
+
+.authRight::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(37, 99, 235, 0.08),
+      rgba(15, 23, 42, 0.12)
+    );
+
+  mix-blend-mode: multiply;
+
+  pointer-events: none;
+
+  z-index: 2;
+}
+
+/* =====================================
+   QUOTE
+===================================== */
+
+.quote {
+  position: absolute;
+
+  z-index: 5;
+
+  left: 50%;
+  top: 50%;
+
+  width: 82%;
+
+  transform: translate(-50%, -50%);
+
+  text-align: center;
+
+  color: #ffffff;
+
+  text-shadow:
+    0 3px 15px rgba(0, 0, 0, 0.55),
+    0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.quote h2 {
+  margin: 0;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: clamp(35px, 4vw, 60px);
+
+  font-style: italic;
+
+  font-weight: 500;
+
+  line-height: 1.08;
+
+  letter-spacing: -1px;
+}
+
+.quote h2 strong {
+  font-weight: 700;
+}
+
+.quoteMark {
+  display: block;
+
+  color: rgba(255, 255, 255, 0.75);
+
+  font-family: Georgia, serif;
+
+  font-size: 55px;
+
+  line-height: 25px;
+}
+
+.quoteMark.bottom {
+  margin-top: 12px;
+}
+
+/* =====================================
+   SUBTLE IMAGE ANIMATION
+===================================== */
+
+@keyframes mountainZoom {
+  from {
+    transform: scale(1.01);
+  }
+
+  to {
+    transform: scale(1.06);
+  }
+}
+
+.authRight {
+  animation: mountainZoom 12s ease-in-out infinite alternate;
+}
+
+/* =====================================
+   DESKTOP
+===================================== */
+
+@media (min-width: 1200px) {
+  .authLeft {
+    width: 54%;
+  }
+
+  .authRight {
+    width: 46%;
+  }
+
+  .authFormWrapper {
+    max-width: 450px;
+  }
+}
+
+/* =====================================
+   TABLET
+===================================== */
+
+@media (max-width: 900px) {
+  .authLeft {
+    width: 100%;
+
+    min-height: 100vh;
+
+    padding: 35px 25px;
+  }
+
+  .authRight {
+    display: none;
+  }
+
+  .authFormWrapper {
+    max-width: 470px;
+  }
+}
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media (max-width: 480px) {
+  .authLeft {
+    padding: 28px 20px;
+  }
+
+  .authLogo {
+    font-size: 27px;
+
+    margin-bottom: 30px;
+  }
+
+  .authHeader h1 {
+    font-size: 29px;
+  }
+
+  .authHeader p {
+    font-size: 13px;
+  }
+
+  .inputGroup input {
+    height: 50px;
+  }
+
+  .authSubmit {
+    height: 50px;
+  }
+
+  .socialButton {
+    height: 46px;
+  }
+}
