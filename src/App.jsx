@@ -6,8 +6,8 @@ import "./App.css";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Interview from "./pages/Interview";
-import LiveInterview from "./pages/LiveInterview";
+import Interview from "./pages/interview";
+import LiveInterview from "./pages/liveinterview";
 
 /* =====================================================
    LANDING PAGE
