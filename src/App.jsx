@@ -7,7 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Interview from "./pages/interview";
-import LiveInterview from "./pages/liveinterview";
+import LiveInterview from "./pages/Liveinterview";
 
 /* =====================================================
    LANDING PAGE
