@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { GoogleGenAI, Modality } from "@google/genai";
 
 import {
@@ -19,6 +19,7 @@ import {
   Languages,
   Loader2,
   MessageCircle,
+  FileText,
 } from "lucide-react";
 
 import { supabase } from "../lib/supabase";
@@ -30,8 +31,41 @@ import "./liveinterview.css";
 
 const LIVE_MODEL = "gemini-3.8-live";
 
+/*
+ * Maximum resume characters sent to Gemini.
+ * This prevents extremely large resumes from
+ * making the Live session unnecessarily huge.
+ */
+const MAX_RESUME_CHARS = 25000;
+
 export default function LiveInterview() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  /* =====================================================
+     RECEIVE DATA FROM INTERVIEW.JSX
+  ===================================================== */
+
+  const interviewData = location.state || {};
+
+  const receivedInterviewType = interviewData.interviewType || "Professional";
+
+  const receivedLanguage = interviewData.language || "English";
+
+  const receivedJobRole = interviewData.jobRole || "Software Developer";
+
+  const receivedResume = interviewData.resume || null;
+
+  const receivedResumeText =
+    typeof interviewData.resumeText === "string"
+      ? interviewData.resumeText
+      : "";
+
+  /*
+   * Keep resume text in a ref so the Gemini connection
+   * always gets the latest value.
+   */
+  const resumeTextRef = useRef(receivedResumeText.slice(0, MAX_RESUME_CHARS));
 
   /* =====================================================
      VIDEO / MEDIA
@@ -75,8 +109,22 @@ export default function LiveInterview() {
      SETTINGS
   ===================================================== */
 
-  const [language, setLanguage] = useState("English");
-  const [mode, setMode] = useState("Professional");
+  const [language, setLanguage] = useState(receivedLanguage);
+
+  const [mode, setMode] = useState(receivedInterviewType);
+
+  const [jobRole] = useState(receivedJobRole);
+
+  /* =====================================================
+     RESUME STATE
+  ===================================================== */
+
+  const [resumeText] = useState(receivedResumeText);
+
+  const [resumeAvailable] = useState(
+    receivedInterviewType === "Professional" &&
+      receivedResumeText.trim().length > 0,
+  );
 
   /* =====================================================
      MEDIA STATES
@@ -91,8 +139,11 @@ export default function LiveInterview() {
   ===================================================== */
 
   const [liveConnected, setLiveConnected] = useState(false);
+
   const [aiSpeaking, setAiSpeaking] = useState(false);
+
   const [userSpeaking, setUserSpeaking] = useState(false);
+
   const [connecting, setConnecting] = useState(false);
 
   const [aiError, setAiError] = useState("");
@@ -104,6 +155,7 @@ export default function LiveInterview() {
   const [conversation, setConversation] = useState([]);
 
   const [userTranscript, setUserTranscript] = useState("");
+
   const [aiTranscript, setAiTranscript] = useState("");
 
   /* =====================================================
@@ -133,6 +185,36 @@ export default function LiveInterview() {
   }
 
   /* =====================================================
+     CHECK RECEIVED INTERVIEW DATA
+  ===================================================== */
+
+  useEffect(() => {
+    console.log("=================================");
+    console.log("VOXA AI INTERVIEW DATA");
+    console.log("=================================");
+    console.log("Interview Type:", receivedInterviewType);
+    console.log("Language:", receivedLanguage);
+    console.log("Job Role:", receivedJobRole);
+    console.log("Resume:", receivedResume?.name || "No resume");
+    console.log("Resume text length:", receivedResumeText.length);
+    console.log("Resume available:", receivedResumeText.trim().length > 0);
+    console.log("=================================");
+
+    if (
+      receivedInterviewType === "Professional" &&
+      !receivedResumeText.trim()
+    ) {
+      console.warn("Professional interview started without resume text.");
+    }
+  }, [
+    receivedInterviewType,
+    receivedLanguage,
+    receivedJobRole,
+    receivedResume,
+    receivedResumeText,
+  ]);
+
+  /* =====================================================
      GET CANDIDATE NAME FROM SUPABASE
   ===================================================== */
 
@@ -158,10 +240,6 @@ export default function LiveInterview() {
         console.warn("No authenticated user found.");
         return;
       }
-
-      /*
-       * Try multiple common Supabase metadata fields.
-       */
 
       const metadata = user.user_metadata || {};
 
@@ -230,9 +308,11 @@ export default function LiveInterview() {
       }
 
       const videoTrack = stream.getVideoTracks()[0];
+
       const audioTrack = stream.getAudioTracks()[0];
 
       setCameraOn(videoTrack?.enabled ?? true);
+
       setMicOn(audioTrack?.enabled ?? true);
     } catch (error) {
       console.error("Media error:", error);
@@ -549,6 +629,7 @@ export default function LiveInterview() {
   function stopMicrophoneStreaming() {
     try {
       processorRef.current?.disconnect();
+
       sourceRef.current?.disconnect();
     } catch (error) {
       console.warn(error);
@@ -561,156 +642,297 @@ export default function LiveInterview() {
   }
 
   /* =====================================================
+     BUILD RESUME CONTEXT
+  ===================================================== */
+
+  function getResumeContext() {
+    const text = resumeTextRef.current?.trim();
+
+    if (mode !== "Professional" || !text) {
+      return `
+=====================================================
+RESUME STATUS
+=====================================================
+
+No readable resume content is available.
+
+Use the selected job role and candidate answers
+to conduct the interview.
+`;
+    }
+
+    return `
+=====================================================
+CANDIDATE RESUME — IMPORTANT
+=====================================================
+
+The candidate has uploaded a resume.
+
+Resume file:
+${receivedResume?.name || "Candidate Resume"}
+
+The following is the TEXT EXTRACTED from the candidate's
+actual resume:
+
+---------------- RESUME START ----------------
+
+${text}
+
+----------------- RESUME END -----------------
+
+=====================================================
+RESUME-BASED INTERVIEW RULES
+=====================================================
+
+You MUST use the resume above as a primary source
+for the Professional interview.
+
+You have successfully received the candidate's
+resume text.
+
+DO NOT say:
+"I cannot access your resume."
+"I don't have your resume."
+"Please upload your resume."
+"I cannot read the resume."
+
+The resume has already been provided to you.
+
+Use information from the resume to ask questions
+about:
+
+1. Projects
+2. Programming languages
+3. Frameworks
+4. Technologies
+5. Internships
+6. Work experience
+7. Education
+8. Certifications
+9. Achievements
+10. Skills
+11. Tools
+12. Responsibilities
+13. Technical decisions
+14. Problems solved
+
+=====================================================
+PROJECT QUESTIONS
+=====================================================
+
+If the resume contains a project, ask about
+the ACTUAL project.
+
+Example:
+
+Resume:
+"NovaCart — E-commerce website using React,
+Node.js, Express and MongoDB."
+
+Good question:
+
+"You mentioned building NovaCart using React,
+Node.js, Express and MongoDB. Can you explain
+how you designed the backend architecture?"
+
+Do NOT ask a completely unrelated generic question
+when useful resume information is available.
+
+=====================================================
+TECHNOLOGY QUESTIONS
+=====================================================
+
+If the resume mentions React:
+
+Ask about the candidate's actual React usage.
+
+If the resume mentions Node.js:
+
+Ask about their backend/API implementation.
+
+If the resume mentions MongoDB:
+
+Ask about schemas, queries, relationships,
+indexing or database design relevant to their project.
+
+If the resume mentions Python:
+
+Ask about how they actually used Python.
+
+Do NOT assume the candidate knows a technology
+just because it appears on the resume.
+
+Verify their actual understanding.
+
+=====================================================
+INTERNSHIP QUESTIONS
+=====================================================
+
+If the resume contains an internship:
+
+Ask about:
+
+- Responsibilities
+- Tasks
+- Technologies
+- Problems
+- Contributions
+- What they learned
+
+Questions should be specific to the internship
+information present in the resume.
+
+=====================================================
+FOLLOW-UP QUESTIONS
+=====================================================
+
+Remember what the candidate says.
+
+If the candidate gives an answer about a resume
+project, ask a deeper follow-up about that answer.
+
+Example:
+
+Candidate:
+"I used Express to create APIs."
+
+Follow-up:
+
+"How did you structure those APIs and handle
+authentication or validation?"
+
+If the candidate gives a strong technical answer,
+increase difficulty.
+
+If the candidate gives a weak answer,
+ask a simpler clarification question.
+
+=====================================================
+IMPORTANT RESUME RULE
+=====================================================
+
+Do not read the entire resume aloud.
+
+Do not summarize the resume to the candidate.
+
+Use the resume silently as interview context.
+
+Ask ONE question at a time.
+
+`;
+  }
+
+  /* =====================================================
      SYSTEM INSTRUCTION
   ===================================================== */
 
   function getSystemInstruction() {
     const name = candidateNameRef.current || "Candidate";
 
+    const resumeContext = getResumeContext();
+
     return `
 You are VOXA AI, an advanced real-time AI interviewer.
 
-You are conducting a LIVE voice-to-voice interview with a candidate.
+You are conducting a LIVE voice-to-voice interview
+with a candidate.
 
-IMPORTANT CANDIDATE INFORMATION:
-Candidate name: ${name}
+=====================================================
+CANDIDATE INFORMATION
+=====================================================
 
-Interview mode: ${mode}
-Language: ${language}
+Candidate name:
+${name}
+
+Interview mode:
+${mode}
+
+Language:
+${language}
+
+Target job role:
+${jobRole}
+
+${resumeContext}
 
 =====================================================
 MOST IMPORTANT INTERVIEW RULE
 =====================================================
 
-DO NOT INTRODUCE YOURSELF.
+You are the INTERVIEWER.
 
-Never say:
-"Hi, I am VOXA AI."
-"Namaste, I am VOXA AI."
-"I am an AI trained by Google."
-"I am an AI interviewer."
-"I am VOXA AI."
+Your job is to ask questions.
 
-The candidate already knows that this is VOXA AI.
+The candidate is the person being interviewed.
 
-Your job is to interview the candidate.
+Do not answer questions on behalf of the candidate.
 
-=====================================================
-HOW THE INTERVIEW MUST START
-=====================================================
-
-When the interview starts:
-
-1. Address the candidate by their name.
-
-2. Briefly welcome them.
-
-3. Immediately ask the FIRST interview question.
-
-DO NOT ask:
-"Where should we start?"
-"How can I help you?"
-"What would you like to discuss?"
-"Shall we begin?"
-"Where would you like to start?"
-
-Instead, directly start the interview.
-
-Example in English:
-
-"Hello ${name}, thanks for joining. Let's begin. Could you briefly introduce yourself and tell me about your background?"
-
-Example in Hindi:
-
-"नमस्ते ${name}, interview में आपका स्वागत है। चलिए शुरू करते हैं। सबसे पहले, अपने बारे में और अपने background के बारे में बताइए।"
-
-Example in Hinglish:
-
-"Hi ${name}, thanks for joining. Chaliye interview start karte hain. Sabse pehle, apne baare mein aur apne background ke baare mein batayiye."
-
-IMPORTANT:
-Do not say all three examples.
-Use ONLY the selected language.
-
-=====================================================
-INTERVIEW BEHAVIOUR
-=====================================================
-
-You are the interviewer.
-
-The candidate should answer your questions.
-
-You should NOT wait for the candidate to decide what to discuss.
-
-You must drive the interview.
-
-After every candidate answer:
-
-1. Understand what the candidate said.
-2. Give a short natural reaction if appropriate.
-3. Ask the next relevant interview question.
-
-Do not ask multiple questions at once.
+Drive the interview yourself.
 
 Ask ONE clear question at a time.
 
 =====================================================
-DYNAMIC QUESTIONS
+DO NOT INTRODUCE YOURSELF
 =====================================================
 
-Do NOT follow a rigid fixed list.
+NEVER say:
 
-Questions must depend on the candidate's previous answers.
+"Hi, I am VOXA AI."
 
-For example:
+"I am VOXA AI."
 
-If candidate mentions a project:
-Ask about that project.
+"I am an AI interviewer."
 
-If candidate mentions React:
-Ask a React-related question.
+"I am an AI trained by Google."
 
-If candidate mentions Node.js:
-Ask about backend/API concepts.
+"I am an artificial intelligence."
 
-If candidate mentions MongoDB:
-Ask about database design.
+The candidate already knows this is VOXA AI.
 
-If candidate mentions a difficult problem:
-Ask how they solved it.
-
-If candidate gives a weak answer:
-Ask a simpler follow-up.
-
-If candidate gives an excellent answer:
-Ask a deeper technical follow-up.
-
-Remember important information from earlier answers.
+Start the interview directly.
 
 =====================================================
-INTERVIEW FLOW
+FIRST QUESTION
 =====================================================
 
-Start with:
+When the interview starts:
 
-Candidate introduction.
+1. Address the candidate by name.
+2. Give a short welcome.
+3. Immediately ask the first question.
 
-Then gradually cover:
+Do not ask:
 
-1. Background
-2. Education
-3. Projects
-4. Programming
-5. Technical concepts
-6. Problem solving
-7. Software development
-8. Communication
-9. Behavioural questions
-10. Role-specific questions
+"Where should we start?"
 
-Do NOT ask all topics mechanically.
+"How can I help you?"
 
-The interview should feel like a real conversation.
+"What would you like to discuss?"
+
+"Shall we begin?"
+
+You are the interviewer.
+
+YOU decide what to ask.
+
+=====================================================
+LANGUAGE
+=====================================================
+
+Selected language:
+
+${language}
+
+If English:
+Use natural professional English.
+
+If Hindi:
+Use natural Hindi.
+
+If Hinglish:
+Use natural Indian Hinglish.
+
+Do not unnecessarily translate sentences.
 
 =====================================================
 PROFESSIONAL MODE
@@ -718,16 +940,32 @@ PROFESSIONAL MODE
 
 When mode is Professional:
 
-- Be professional.
-- Ask realistic Software Developer interview questions.
-- Test technical knowledge.
-- Ask about projects.
-- Ask programming questions.
-- Ask problem-solving questions.
-- Ask practical development questions.
-- Ask behavioural questions where appropriate.
+Target role:
+${jobRole}
 
-Do not become robotic.
+Conduct a realistic job interview.
+
+Use the candidate's resume as the PRIMARY
+personalization source.
+
+Cover relevant areas such as:
+
+- Introduction
+- Education
+- Projects
+- Technical skills
+- Programming
+- Frameworks
+- Databases
+- Problem solving
+- Software development
+- Internship/work experience
+- Behavioural questions
+- Role-specific knowledge
+
+However, do not mechanically ask all categories.
+
+Follow the natural conversation.
 
 =====================================================
 CASUAL MODE
@@ -735,66 +973,93 @@ CASUAL MODE
 
 When mode is Casual:
 
-- Be friendly.
-- Be relaxed.
-- Make the candidate comfortable.
-- Still conduct a real interview.
-- Use natural conversational expressions.
+Be friendly and relaxed.
+
+Focus on:
+
+- Communication
+- Confidence
+- Background
+- Goals
+- General conversation
+
+The interview should still feel structured.
 
 =====================================================
-LANGUAGE
+DYNAMIC INTERVIEW
 =====================================================
 
-Selected language: ${language}
+Do NOT follow a rigid fixed list.
 
-If English:
-Speak natural professional English.
+Every question should depend on:
 
-If Hindi:
-Speak natural Hindi.
+1. The resume
+2. The job role
+3. The candidate's previous answer
+4. The candidate's demonstrated knowledge
 
-If Hinglish:
-Speak natural Indian Hinglish.
+If the candidate mentions a project:
+Ask about that project.
 
-Do not unnecessarily translate sentences.
+If the candidate mentions React:
+Ask about React usage.
+
+If the candidate mentions Node.js:
+Ask about their backend work.
+
+If the candidate mentions MongoDB:
+Ask about database design.
+
+If the candidate describes a problem:
+Ask how they solved it.
+
+If the candidate gives a weak answer:
+Ask a simpler follow-up.
+
+If the candidate gives an excellent answer:
+Ask a deeper follow-up.
 
 =====================================================
-RESPONSE LENGTH
+REAL INTERVIEW BEHAVIOUR
 =====================================================
 
-Keep spoken responses short.
+After every candidate answer:
 
-Normally:
-1-3 sentences.
+1. Understand the answer.
+2. Give a short natural reaction when appropriate.
+3. Ask the next relevant question.
+
+Do not repeatedly say:
+
+"Good answer."
+
+"Excellent answer."
+
+"That's a great answer."
+
+Use natural reactions.
 
 Do not give long explanations.
 
-Do not give speeches.
-
-Do not repeatedly say:
-"Good answer."
-"Excellent answer."
-"That's a great answer."
-
-Use natural reactions instead.
+Normally keep your spoken response to
+1–3 sentences.
 
 =====================================================
-IMPORTANT
+ONE QUESTION AT A TIME
 =====================================================
 
-You are NOT the candidate.
+Never ask multiple interview questions together.
 
-You are the INTERVIEWER.
+Bad:
 
-Do not answer questions on behalf of the candidate.
+"Tell me about React, your project and MongoDB."
 
-Do not introduce yourself.
+Good:
 
-Do not ask the candidate where to start.
+"You mentioned using React in your project.
+How did you structure the frontend?"
 
-Do not ask the candidate what they want to discuss.
-
-YOU decide the next interview question.
+Then wait.
 
 =====================================================
 INTERRUPTION
@@ -802,39 +1067,52 @@ INTERRUPTION
 
 If the candidate starts speaking while you are speaking:
 
-Stop your response naturally.
+Stop naturally.
 
 Listen to the candidate.
 
 Continue from what the candidate says.
 
 =====================================================
+INTERVIEW LENGTH
+=====================================================
+
+Continue the interview naturally.
+
+Do not end randomly.
+
+Do not repeatedly ask whether the candidate
+wants to continue.
+
+The user controls when the interview ends.
+
+=====================================================
 ENDING
 =====================================================
 
-Do not end the interview randomly.
-
-Continue asking questions until the interview is ended by the user or the interview duration is reached.
-
-When the interview is explicitly ended:
+When the user explicitly ends the interview:
 
 Thank the candidate briefly.
 
 Do not provide a long speech.
 
 =====================================================
-FINAL START RULE
+FINAL RULE
 =====================================================
 
-The very first AI response must:
+The candidate's resume is important.
 
-1. Say the candidate's name.
-2. Welcome the candidate briefly.
-3. Immediately ask the first interview question.
+For Professional mode, use the resume content
+to personalize the interview.
 
-NEVER introduce yourself.
+Do not claim to have read information that is
+not present in the resume.
 
-NEVER ask "where should we start?"
+Do not invent projects, technologies,
+experience or qualifications.
+
+Use ONLY information actually provided
+in the resume and conversation.
 
 Start the interview immediately.
 `;
@@ -855,23 +1133,69 @@ Start the interview immediately.
       setConnecting(true);
       setAiError("");
 
+      /* -----------------------------------------------
+         PROFESSIONAL RESUME CHECK
+      ----------------------------------------------- */
+
+      if (mode === "Professional" && !resumeTextRef.current.trim()) {
+        throw new Error("Professional interview requires a readable resume.");
+      }
+
+      /* -----------------------------------------------
+         MEDIA
+      ----------------------------------------------- */
+
       if (!streamRef.current) {
         await startMedia();
       }
 
-      /*
-       * Refresh candidate name before interview
-       */
+      /* -----------------------------------------------
+         CANDIDATE
+         ----------------------------------------------- */
 
       await loadCandidateName();
 
+      /* -----------------------------------------------
+         TOKEN
+      ----------------------------------------------- */
+
       const token = await getLiveToken();
 
+      /* -----------------------------------------------
+         AUDIO
+      ----------------------------------------------- */
+
       await createAudioContexts();
+
+      /* -----------------------------------------------
+         GEMINI
+      ----------------------------------------------- */
 
       const ai = new GoogleGenAI({
         apiKey: token,
       });
+
+      /* -----------------------------------------------
+         SYSTEM INSTRUCTION
+      ----------------------------------------------- */
+
+      const systemInstruction = getSystemInstruction();
+
+      console.log("=================================");
+
+      console.log("CONNECTING GEMINI WITH RESUME");
+
+      console.log("Resume available:", !!resumeTextRef.current.trim());
+
+      console.log("Resume characters:", resumeTextRef.current.length);
+
+      console.log("Job role:", jobRole);
+
+      console.log("=================================");
+
+      /* -----------------------------------------------
+         LIVE SESSION
+      ----------------------------------------------- */
 
       const session = await ai.live.connect({
         model: LIVE_MODEL,
@@ -881,13 +1205,17 @@ Start the interview immediately.
             console.log("VOXA AI Live connected.");
 
             setLiveConnected(true);
+
             setConnecting(false);
+
             setAiError("");
 
             userTranscriptRef.current = "";
+
             aiTranscriptRef.current = "";
 
             setUserTranscript("");
+
             setAiTranscript("");
           },
 
@@ -905,7 +1233,9 @@ Start the interview immediately.
             console.log("Gemini Live closed:", event?.reason);
 
             setLiveConnected(false);
+
             setAiSpeaking(false);
+
             setUserSpeaking(false);
           },
         },
@@ -916,7 +1246,7 @@ Start the interview immediately.
           systemInstruction: {
             parts: [
               {
-                text: getSystemInstruction(),
+                text: systemInstruction,
               },
             ],
           },
@@ -947,15 +1277,15 @@ Start the interview immediately.
 
       sessionRef.current = session;
 
+      /* -----------------------------------------------
+         START MIC
+      ----------------------------------------------- */
+
       await startMicrophoneStreaming(session);
 
-      /*
-       * IMPORTANT:
-       * Do NOT tell Gemini to introduce itself.
-       *
-       * We explicitly tell it to start the interview
-       * with the candidate's name and first question.
-       */
+      /* -----------------------------------------------
+         OPENING MESSAGE
+      ----------------------------------------------- */
 
       setTimeout(() => {
         try {
@@ -969,55 +1299,132 @@ Interview immediately start karo.
 
 Candidate ka naam ${name} hai.
 
+Target job role:
+${jobRole}
+
+${
+  mode === "Professional" && resumeTextRef.current.trim()
+    ? `
+IMPORTANT:
+
+Candidate ka resume tumhe system instructions
+mein diya gaya hai.
+
+Resume ko interview ke dauran use karo.
+
+Introduction ke baad resume ke actual
+projects, skills ya experience se question pucho.
+
+Resume dobara upload karne ko mat bolo.
+`
+    : ""
+}
+
 Apna introduction bilkul mat dena.
-"Main VOXA AI hoon" ya "main AI hoon" mat bolna.
 
-Candidate ko naam se address karo.
+"Main VOXA AI hoon" mat bolna.
 
-Short welcome ke baad seedha pehla interview question pucho:
+Short welcome ke baad seedha pehla question pucho:
 
-"Namaste ${name}, interview mein aapka swagat hai. Sabse pehle, apne baare mein aur apne background ke baare mein batayiye."
+"Namaste ${name}, interview mein aapka swagat hai.
+Sabse pehle, apne baare mein aur apne background
+ke baare mein batayiye."
 
-Sirf interviewer ki tarah behave karo.
-"Hum kaha se start karein?" mat puchhna.
+Uske baad candidate ke answer aur resume ke
+basis par interview continue karo.
+
+Ek time par sirf ONE question pucho.
 `;
           } else if (language === "Hinglish") {
             openingInstruction = `
 Start the interview immediately.
 
-Candidate name is ${name}.
+Candidate name:
+${name}
+
+Target job role:
+${jobRole}
+
+${
+  mode === "Professional" && resumeTextRef.current.trim()
+    ? `
+The candidate's resume has already been provided.
+
+Use the actual resume content to personalize
+the interview.
+
+After the introduction, ask about relevant
+projects, skills, internship or experience
+from the resume.
+
+Do NOT ask the candidate to upload the resume again.
+`
+    : ""
+}
 
 DO NOT introduce yourself.
+
 Do not say "I am VOXA AI."
-Do not explain who you are.
 
-Address the candidate by their name.
+Address the candidate by name.
 
-Give a very short welcome and immediately ask:
+Start with:
 
-"Hi ${name}, thanks for joining. Chaliye interview start karte hain. Sabse pehle, apne baare mein aur apne background ke baare mein batayiye."
+"Hi ${name}, thanks for joining. Chaliye interview
+start karte hain. Sabse pehle, apne baare mein
+aur apne background ke baare mein batayiye."
 
-Do not ask where to start.
-You are the interviewer, so you decide the first question.
+Then continue dynamically using the resume,
+job role and candidate answers.
+
+Ask only ONE question at a time.
 `;
           } else {
             openingInstruction = `
 Start the interview immediately.
 
-Candidate name is ${name}.
+Candidate name:
+${name}
+
+Target job role:
+${jobRole}
+
+${
+  mode === "Professional" && resumeTextRef.current.trim()
+    ? `
+The candidate's actual resume has been provided
+in your system instructions.
+
+Use the resume as the primary source for
+personalized Professional interview questions.
+
+After the introduction, move into the
+candidate's actual projects, skills,
+internships and experience.
+
+Do NOT ask the candidate to upload the resume again.
+Do NOT say that you cannot access the resume.
+`
+    : ""
+}
 
 DO NOT introduce yourself.
+
 Do not say "I am VOXA AI."
-Do not explain who you are.
 
-Address the candidate by their name.
+Address the candidate by name.
 
-Give a very short welcome and immediately ask:
+Start with:
 
-"Hello ${name}, thanks for joining. Let's begin. Could you briefly introduce yourself and tell me about your background?"
+"Hello ${name}, thanks for joining. Let's begin.
+Could you briefly introduce yourself and tell me
+about your background?"
 
-Do not ask where to start.
-You are the interviewer, so you decide the first question.
+Then continue the interview dynamically.
+
+Use the resume, job role and previous answers.
+
+Ask only ONE question at a time.
 `;
           }
 
@@ -1034,6 +1441,7 @@ You are the interviewer, so you decide the first question.
       setAiError(error?.message || "Unable to connect to Gemini Live.");
 
       setConnecting(false);
+
       setLiveConnected(false);
     } finally {
       connectingRef.current = false;
@@ -1047,17 +1455,17 @@ You are the interviewer, so you decide the first question.
   function handleGeminiMessage(message) {
     if (!message) return;
 
-    /*
-     * INTERRUPTION
-     */
+    /* -----------------------------------------------
+       INTERRUPTION
+    ----------------------------------------------- */
 
     if (message?.serverContent?.interrupted) {
       stopAIPlayback();
     }
 
-    /*
-     * AUDIO RESPONSE
-     */
+    /* -----------------------------------------------
+       AUDIO RESPONSE
+    ----------------------------------------------- */
 
     const parts = message?.serverContent?.modelTurn?.parts || [];
 
@@ -1071,9 +1479,9 @@ You are the interviewer, so you decide the first question.
       }
     }
 
-    /*
-     * USER TRANSCRIPTION
-     */
+    /* -----------------------------------------------
+       USER TRANSCRIPTION
+    ----------------------------------------------- */
 
     const inputText = message?.serverContent?.inputTranscription?.text;
 
@@ -1083,9 +1491,9 @@ You are the interviewer, so you decide the first question.
       setUserTranscript(userTranscriptRef.current);
     }
 
-    /*
-     * AI TRANSCRIPTION
-     */
+    /* -----------------------------------------------
+       AI TRANSCRIPTION
+    ----------------------------------------------- */
 
     const outputText = message?.serverContent?.outputTranscription?.text;
 
@@ -1095,9 +1503,9 @@ You are the interviewer, so you decide the first question.
       setAiTranscript(aiTranscriptRef.current);
     }
 
-    /*
-     * TURN COMPLETE
-     */
+    /* -----------------------------------------------
+       TURN COMPLETE
+    ----------------------------------------------- */
 
     if (message?.serverContent?.turnComplete) {
       setUserSpeaking(false);
@@ -1129,9 +1537,11 @@ You are the interviewer, so you decide the first question.
       }
 
       userTranscriptRef.current = "";
+
       aiTranscriptRef.current = "";
 
       setUserTranscript("");
+
       setAiTranscript("");
     }
   }
@@ -1318,6 +1728,36 @@ You are the interviewer, so you decide the first question.
       </header>
 
       {/* =================================================
+          RESUME STATUS
+      ================================================= */}
+
+      {mode === "Professional" && (
+        <div
+          style={{
+            margin: "12px 20px",
+            padding: "10px 14px",
+            borderRadius: "10px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            background: resumeAvailable
+              ? "rgba(34,197,94,0.08)"
+              : "rgba(239,68,68,0.08)",
+            border: resumeAvailable
+              ? "1px solid rgba(34,197,94,0.2)"
+              : "1px solid rgba(239,68,68,0.2)",
+            fontSize: "13px",
+          }}
+        >
+          <FileText size={16} />
+
+          {resumeAvailable
+            ? `Resume loaded • ${resumeText.length.toLocaleString()} characters • Gemini will use your resume`
+            : "Resume context is not available"}
+        </div>
+      )}
+
+      {/* =================================================
           SETTINGS
       ================================================= */}
 
@@ -1490,9 +1930,7 @@ You are the interviewer, so you decide the first question.
             )}
           </div>
 
-          {/* =================================================
-              LIVE TRANSCRIPTS
-          ================================================= */}
+          {/* TRANSCRIPTS */}
 
           <div
             style={{
